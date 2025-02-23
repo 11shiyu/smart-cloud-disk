@@ -1,0 +1,40 @@
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: yu-picture-backend
+    #数据库配置
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/yu_picture
+    username: root
+    password: 123456
+mybatis-plus:
+  configuration:
+    # MyBatis 配置
+    map-underscore-to-camel-case: false
+    # 仅在开发环境打印日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    # 全局配置
+    db-config:
+      # 逻辑删除 加一个字段判断是都被删而不是真的删除数据
+      logic-delete-field: isDelete #字段名
+      logic-delete-value: 1
+
+
+# api 接口文档配置
+knife4j:
+  enable: true
+  openapi:
+    title: 接口文档
+    version: 1.0
+    group: # 识别接口controller 并自动生成文档
+      default:
+        group-name: 默认分组
+        api-rule: package
+        api-rule-resources:
+          - com.yupi.yupicturebackend.controller
