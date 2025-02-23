@@ -24,4 +24,17 @@ mybatis-plus:
       # 逻辑删除 加一个字段判断是都被删而不是真的删除数据
       logic-delete-field: isDelete #字段名
       logic-delete-value: 1
-      logic-not-delete-value: 0
+
+
+# api 接口文档配置
+knife4j:
+  enable: true
+  openapi:
+    title: 接口文档
+    version: 1.0
+    group: # 识别接口controller 并自动生成文档
+      default:
+        group-name: 默认分组
+        api-rule: package
+        api-rule-resources:
+          - com.yupi.yupicturebackend.controller
