@@ -2,7 +2,7 @@ package com.yupi.yupicturebackend.common;
 
 import lombok.Data;
 
-//通用 分页请求包装类 可用于分表查询 如传来 页号 页面大小 字段 顺序
+//通用分页请求包装类 可用于分表查询 如传来 页号 页面大小 字段 顺序
 @Data
 public class PageRequest {
 
