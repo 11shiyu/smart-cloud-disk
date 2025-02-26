@@ -34,7 +34,6 @@ knife4j:
     version: 1.0
     group: # 识别接口controller 并自动生成文档
       default:
-        group-name: 默认分组
         api-rule: package
         api-rule-resources:
           - com.yupi.yupicturebackend.controller
