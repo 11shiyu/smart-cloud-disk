@@ -177,6 +177,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 使用mybatis plus 的queryWrapper对象将用户传入的参数构造sql查询
+     * 将前端查询请求 转换为mybatis后端查询
      * @param userQueryRequest
      * @return
      */
@@ -201,6 +202,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.like(StrUtil.isNotBlank(userProfile), "userProfile", userProfile);
         queryWrapper.orderBy(StrUtil.isNotEmpty(sortField), sortOrder.equals("ascend"), sortField);
         return queryWrapper;
+    }
+
+    @Override
+    public boolean isAdmin(User user) {
+        return user != null && UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
     }
 
 
