@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 请求封装类 dto
+ */
 @Data
 public class PictureUploadRequest implements Serializable {
   
@@ -11,7 +14,18 @@ public class PictureUploadRequest implements Serializable {
      * 因此支持图片重复上传
      * 图片 id（用于修改）  
      */  
-    private Long id;  
-  
+    private Long id;
+
+    /**
+     * 文件地址
+     */
+    private String fileUrl;
+
+    /**
+     * 上传图片时 允许指定 图片名称
+     */
+    private String picName;
+
+
     private static final long serialVersionUID = 1L;  
 }
