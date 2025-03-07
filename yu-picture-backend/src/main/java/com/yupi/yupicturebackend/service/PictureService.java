@@ -10,6 +10,7 @@ import com.yupi.yupicturebackend.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yupi.yupicturebackend.model.entity.User;
 import com.yupi.yupicturebackend.model.vo.PictureVO;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -73,4 +74,10 @@ public interface PictureService extends IService<Picture> {
             User loginUser
     );
 
+    /**
+     * 清理图片文件
+     * @param oldPicture
+     */
+    @Async
+    void clearPictureFile(Picture oldPicture);
 }

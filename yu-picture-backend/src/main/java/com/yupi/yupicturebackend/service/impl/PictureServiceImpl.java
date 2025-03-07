@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupi.yupicturebackend.exception.BusinessException;
 import com.yupi.yupicturebackend.exception.ErrorCode;
 import com.yupi.yupicturebackend.exception.ThrowUtils;
-import com.yupi.yupicturebackend.manager.FileManager;
+import com.yupi.yupicturebackend.manager.CosManager;
 import com.yupi.yupicturebackend.manager.upload.FilePictureUpload;
 import com.yupi.yupicturebackend.manager.upload.PictureUploadTemplate;
 import com.yupi.yupicturebackend.manager.upload.UrlPictureUpload;
@@ -32,12 +32,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -63,25 +65,22 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     @Resource
     private UrlPictureUpload urlPictureUpload;
 
+    @Resource
+    private CosManager cosManager;
+
     @Override
     public PictureVO uploadPicture(Object inputSource, PictureUploadRequest pictureUploadRequest, User loginUser) {
         ThrowUtils.throwIf(inputSource == null, ErrorCode.PARAMS_ERROR, "图片为空");
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
         //1. 用于判断是新增还是更新图片
         Long pictureId = null;
+        Picture oldPicture = null;
         if (pictureUploadRequest != null) {
             pictureId = pictureUploadRequest.getId();
         }
         // 如果是更新图片，需要校验图片是否存在
-//        if (pictureId != null) {
-//            boolean exists = this.lambdaQuery()
-//                    .eq(Picture::getId, pictureId)
-//                    .exists();
-//            ThrowUtils.throwIf(!exists, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
-//        }
-        // 如果是更新图片，需要校验图片是否存在
         if (pictureId != null) {
-            Picture oldPicture = this.getById(pictureId);
+            oldPicture = this.getById(pictureId);
             ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
             // 仅本人或管理员可编辑
             if (!oldPicture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
@@ -100,6 +99,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         // 构造要入库的图片信息，这段可以用BeanUtils.copyProperties(taeget,origin) 来进行赋值，注意字段名称不同
         Picture picture = new Picture();
         picture.setUrl(uploadPictureResult.getUrl());
+        picture.setThumbnailUrl(uploadPictureResult.getThumbnailUrl()); //设置缩略图地址
         String picName = uploadPictureResult.getPicName();
         // 支持上传请求中自带图片名，否则为加密后的名称
         if (pictureUploadRequest != null && StrUtil.isNotBlank(pictureUploadRequest.getPicName())) {
@@ -121,6 +121,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             picture.setEditTime(new Date());
         }
         boolean result = this.saveOrUpdate(picture);
+        // 如果是更新 也需要清除 原本的缩略图
+        if (oldPicture != null) {
+            this.clearPictureFile(oldPicture);
+        }
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "图片上传失败");
         return PictureVO.objToVo(picture); //图片数据脱敏
     }
@@ -353,6 +357,37 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         return uploadCount;
     }
 
+    /**
+     * @Async 异步执行 删除操作
+     * @param oldPicture
+     */
+    @Async
+    @Override
+    public void clearPictureFile(Picture oldPicture) {
+        // 判断该图片是否被多条记录使用
+        String pictureUrl = oldPicture.getUrl();
+        long count = this.lambdaQuery()
+                .eq(Picture::getUrl, pictureUrl)
+                .count();
+        // 有不止一条记录用到了该图片，不清理
+        if (count > 1) {
+            return;
+        }
+        try {
+            // 注意，这里的 url 包含了域名，实际上只要传 key 值（存储路径）就够了
+            String picturePath = new URL(pictureUrl).getPath();
+            cosManager.deleteObject(oldPicture.getUrl());
+            // 清理缩略图
+            String thumbnailUrl = oldPicture.getThumbnailUrl();
+            if (StrUtil.isNotBlank(thumbnailUrl)) {
+                String thumbnailPath = new URL(thumbnailUrl).getPath();
+                cosManager.deleteObject(thumbnailUrl);
+            }
+        } catch (MalformedURLException e) {
+            log.error("处理图片删除时遇到格式错误的URL，图片URL：{}", pictureUrl, e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "格式错误的URL");
+        }
+    }
 
 
 }
