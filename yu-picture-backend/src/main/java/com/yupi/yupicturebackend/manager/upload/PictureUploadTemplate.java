@@ -67,7 +67,7 @@ public abstract class PictureUploadTemplate {
                     thumbnailCiObject = objectList.get(1);
                 }
                 // 封装压缩图返回结果
-                return buildResult(originFilename, compressedCiObject, thumbnailCiObject);
+                return buildResult(originFilename, compressedCiObject, thumbnailCiObject, imageInfo);
             }
 
             // 5. 封装返回结果  
@@ -115,7 +115,9 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicScale(picScale);  
         uploadPictureResult.setPicFormat(imageInfo.getFormat());  
         uploadPictureResult.setPicSize(FileUtil.size(file));  
-        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + uploadPath);  
+        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + uploadPath);
+        uploadPictureResult.setPicColor(imageInfo.getAve());
+
         return uploadPictureResult;  
     }
 
@@ -124,9 +126,10 @@ public abstract class PictureUploadTemplate {
      * @param originFilename
      * @param compressedCiObject 压缩后的对象
      * @param thumbnailCiObject 缩略图对象
+     * @param imageInfo
      * @return
      */
-    private UploadPictureResult buildResult(String originFilename, CIObject compressedCiObject, CIObject thumbnailCiObject) {
+    private UploadPictureResult buildResult(String originFilename, CIObject compressedCiObject, CIObject thumbnailCiObject, ImageInfo imageInfo) {
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
         int picWidth = compressedCiObject.getWidth();
         int picHeight = compressedCiObject.getHeight();
@@ -138,6 +141,8 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicScale(picScale);
         uploadPictureResult.setPicFormat(compressedCiObject.getFormat());
         uploadPictureResult.setPicSize(compressedCiObject.getSize().longValue());
+        uploadPictureResult.setPicColor(imageInfo.getAve());
+
         // 设置压缩图的地址
         uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + compressedCiObject.getKey());
         // 设置缩略图的地址
