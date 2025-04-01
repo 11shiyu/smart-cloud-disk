@@ -30,6 +30,34 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
+  # 空间图片分表
+  shardingsphere:
+    datasource:
+      names: yu_picture
+      yu_picture:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/yu_picture
+        username: root
+        password: 123456
+    rules:
+      sharding:
+        tables:
+          picture:
+            actual-data-nodes: yu_picture.picture # 动态分表 这里指定的是逻辑表 因为物理表范围无法确定 表是根据业务增长的
+            table-strategy:
+              standard:
+                sharding-column: spaceId # 根据spaceId进行分表
+                sharding-algorithm-name: picture_sharding_algorithm  # 使用自定义分片算法
+        sharding-algorithms:
+          picture_sharding_algorithm:
+            type: CLASS_BASED # 基于类实现的算法
+            props:
+              strategy: standard
+              algorithmClassName: com.yupi.yupicturebackend.manager.sharding.PictureShardingAlgorithm
+      props:
+        sql-show: true # 打印实际执行的sql
+
 mybatis-plus:
   configuration:
     # MyBatis 配置
@@ -42,6 +70,7 @@ mybatis-plus:
       # 逻辑删除 加一个字段判断是都被删而不是真的删除数据
       logic-delete-field: isDelete #字段名
       logic-delete-value: 1
+    enable-sql-runner: true
 
 
 # api 接口文档配置

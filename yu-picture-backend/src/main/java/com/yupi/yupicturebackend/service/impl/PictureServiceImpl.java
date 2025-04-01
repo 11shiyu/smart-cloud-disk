@@ -496,8 +496,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         // 判断是否存在
         Picture oldPicture = this.getById(pictureId);
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
-        // 校验权限
-        checkPictureAuth(loginUser, oldPicture);
+        // 已经改为使用sa-token注解 统一鉴权
+        // checkPictureAuth(loginUser, oldPicture);
 
         // 开启事务 释放额度
         transactionTemplate.execute(status -> {
@@ -535,8 +535,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         long id = pictureEditRequest.getId();
         Picture oldPicture = this.getById(id);
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
-        // 校验权限
-        checkPictureAuth(loginUser, oldPicture);
+        // 已经改为使用sa-token注解 统一鉴权
+        // checkPictureAuth(loginUser, oldPicture);
         // 补充审核参数
         this.fillReviewParams(picture, loginUser);
         // 操作数据库
@@ -681,8 +681,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         Long pictureId = createPictureOutPaintingTaskRequest.getPictureId();
         Picture picture = Optional.ofNullable(this.getById(pictureId))
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR));
-        // 权限校验
-        checkPictureAuth(loginUser, picture);
+        // 已经改为使用sa-token注解 统一鉴权
+        // checkPictureAuth(loginUser, picture);
         // 构造请求参数
         CreateOutPaintingTaskRequest taskRequest = new CreateOutPaintingTaskRequest();
         CreateOutPaintingTaskRequest.Input input = new CreateOutPaintingTaskRequest.Input();

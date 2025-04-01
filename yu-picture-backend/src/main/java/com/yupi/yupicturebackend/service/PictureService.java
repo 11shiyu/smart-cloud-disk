@@ -81,6 +81,7 @@ public interface PictureService extends IService<Picture> {
     @Async
     void clearPictureFile(Picture oldPicture);
 
+    // 已经改为使用sa-token注解 统一鉴权
     void checkPictureAuth(User loginUser, Picture picture);
 
     /**
