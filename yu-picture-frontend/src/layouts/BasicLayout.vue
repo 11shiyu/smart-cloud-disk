@@ -10,9 +10,6 @@
           <router-view />
         </a-layout-content>
       </a-layout>
-      <a-layout-footer class="footer">
-        <a href="https://www.codefather.cn" target="_blank"> 编程导航 by 程序员鱼皮 </a>
-      </a-layout-footer>
     </a-layout>
   </div>
 </template>
